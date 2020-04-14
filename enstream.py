@@ -199,7 +199,7 @@ def showHosters():
 
          sDataUrl = aEntry[0]
          sDataCode = aEntry[1]
-         #sHoster = aEntry[3]
+         #sHoster = aEntry[2]
          
          lien = URL_MAIN + 'Players.php?PPl=' + sDataUrl + '&CData=' + sDataCode
          oRequestHandler = cRequestHandler(lien)
