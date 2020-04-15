@@ -149,7 +149,7 @@ def showMovies(sSearch = ''):
             oOutputParameterHandler.addParameter('siteUrl', sUrl)
             oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
             oOutputParameterHandler.addParameter('sThumb', sThumb)
-            oGui.addMovie(SITE_IDENTIFIER, 'showHosters', sTitle, '', sThumb, sDesc, oOutputParameterHandler)
+            oGui.addMovie(SITE_IDENTIFIER, 'showHoster', sTitle, '', sThumb, sDesc, oOutputParameterHandler)
 
         progress_.VSclose(progress_)
 
@@ -172,23 +172,21 @@ def __checkForNextPage(sHtmlContent):
         return aResult[1][0]
 
     return False
-
-
-def showHosters():
+def showHoster():
     oGui = cGui()
+    oParser = cParser()
+
     oInputParameterHandler = cInputParameterHandler()
     sUrl = oInputParameterHandler.getValue('siteUrl')
-    sMovieTitle = oInputParameterHandler.getValue('sMovieTitle')
     sThumb = oInputParameterHandler.getValue('sThumb')
-    # sPost = oInputParameterHandler.getValue('sPost')
+    sMovieTitle = oInputParameterHandler.getValue('sMovieTitle')
 
     oRequestHandler = cRequestHandler(sUrl)
-       
     sHtmlContent = oRequestHandler.request()
 
-    oParser = cParser()
+    
     sPattern = 'data-url="([^"]+)".+?data-code="([^"]+)".+?mobile">([^<]+)'
-
+    oParser = cParser()
     aResult = oParser.parse(sHtmlContent, sPattern)
 
     if (aResult[0] == False):
@@ -197,27 +195,46 @@ def showHosters():
     if (aResult[0] == True):
         for aEntry in aResult[1]:
 
-         sDataUrl = aEntry[0]
-         sDataCode = aEntry[1]
-         #sHoster = aEntry[2]
-         
-         lien = URL_MAIN + 'Players.php?PPl=' + sDataUrl + '&CData=' + sDataCode
-         oRequestHandler = cRequestHandler(lien)
-         sHtmlContent = oRequestHandler.request()
-         
-         
-         sPattern1 = '(https.+)'
-         aResult = oParser.parse(sHtmlContent, sPattern1)
-         lien2 = aResult[1][0]
-         oRequestHandler = cRequestHandler(lien2)
-         sHtmlContent = oRequestHandler.request()
-         
-         sHosterUrl = lien2
-         
-         oHoster = cHosterGui().checkHoster(sHosterUrl)
-         if (oHoster != False):
-             oHoster.setDisplayName(sMovieTitle)
-             oHoster.setFileName(sMovieTitle)
-             cHosterGui().showHoster(oGui, oHoster, sHosterUrl, sThumb)
+            sDataUrl = aEntry[0]
+            sDataCode = aEntry[1]
+            sHost = aEntry[2]
+            sDesc = ''
+            # filtrage des hosters
+            oHoster = cHosterGui().checkHoster(sHost)
+            if not oHoster:
+                continue
+
+            sTitle = ('%s  [COLOR coral]%s[/COLOR]') % (sMovieTitle, sHost)
+            lien = URL_MAIN + 'Players.php?PPl=' + sDataUrl + '&CData=' + sDataCode
+
+            oOutputParameterHandler = cOutputParameterHandler()
+            oOutputParameterHandler.addParameter('sMovieTitle', sMovieTitle)
+            oOutputParameterHandler.addParameter('sThumb', sThumb)
+            oOutputParameterHandler.addParameter('siteUrl', lien)
+            oOutputParameterHandler.addParameter('referer', sUrl)
+            oGui.addLink(SITE_IDENTIFIER, 'showHostersLinks', sTitle, sThumb, sDesc, oOutputParameterHandler)
+
+    oGui.setEndOfDirectory()
+
+
+def showHostersLinks():
+    oGui = cGui()
+    oInputParameterHandler = cInputParameterHandler()
+    sUrl = oInputParameterHandler.getValue('siteUrl')
+    sMovieTitle = oInputParameterHandler.getValue('sMovieTitle')
+    sThumb = oInputParameterHandler.getValue('sThumb')
+    oRequestHandler.addHeaderEntry('Referer', referer)
+   
+    oRequestHandler = cRequestHandler(sUrl)
+       
+    sHtmlContent = oRequestHandler.request()
+
+    
+    sHosterUrl = sUrl 
+    oHoster = cHosterGui().checkHoster(sHosterUrl)
+    if (oHoster != False):
+        oHoster.setDisplayName(sMovieTitle)
+        oHoster.setFileName(sMovieTitle)
+        cHosterGui().showHoster(oGui, oHoster, sHosterUrl, sThumb)
 
     oGui.setEndOfDirectory()
