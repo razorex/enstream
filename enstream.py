@@ -208,6 +208,7 @@ def showHoster():
             lien = URL_MAIN + 'Players.php?PPl=' + sDataUrl + '&CData=' + sDataCode
 
             oOutputParameterHandler = cOutputParameterHandler()
+
             oOutputParameterHandler.addParameter('sMovieTitle', sMovieTitle)
             oOutputParameterHandler.addParameter('sThumb', sThumb)
             oOutputParameterHandler.addParameter('siteUrl', lien)
@@ -223,14 +224,16 @@ def showHostersLinks():
     sUrl = oInputParameterHandler.getValue('siteUrl')
     sMovieTitle = oInputParameterHandler.getValue('sMovieTitle')
     sThumb = oInputParameterHandler.getValue('sThumb')
+    referer = oInputParameterHandler.getValue('referer')
+    oRequestHandler = cRequestHandler(sUrl)
     oRequestHandler.addHeaderEntry('Referer', referer)
    
-    oRequestHandler = cRequestHandler(sUrl)
+    
        
     sHtmlContent = oRequestHandler.request()
 
     
-    sHosterUrl = sUrl 
+    sHosterUrl = sUrl
     oHoster = cHosterGui().checkHoster(sHosterUrl)
     if (oHoster != False):
         oHoster.setDisplayName(sMovieTitle)
@@ -238,3 +241,4 @@ def showHostersLinks():
         cHosterGui().showHoster(oGui, oHoster, sHosterUrl, sThumb)
 
     oGui.setEndOfDirectory()
+
